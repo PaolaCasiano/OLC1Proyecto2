@@ -1,0 +1,12 @@
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\bin\Debug\Proyecto2.exe.config
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\obj\Debug\Proyecto2.csprojResolveAssemblyReference.cache
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\obj\Debug\Proyecto2.Form1.resources
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\obj\Debug\Proyecto2.Properties.Resources.resources
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\obj\Debug\Proyecto2.csproj.GenerateResource.Cache
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\bin\Debug\Proyecto2.exe
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\bin\Debug\Proyecto2.pdb
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\bin\Debug\FastColoredTextBox.dll
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\bin\Debug\Irony.dll
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\bin\Debug\FastColoredTextBox.xml
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\obj\Debug\Proyecto2.exe
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\obj\Debug\Proyecto2.pdb
