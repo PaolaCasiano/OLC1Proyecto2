@@ -13,6 +13,7 @@ namespace Proyecto2.Objetos
         public bool esArray { get; set; }
         public bool esmetodo { get; set; }
         public bool esObjeto { get; set; }
+        public bool completaObjeto { get; set; }
 
         public Entorno entorno { get; set; }
         public ParseTreeNode cuerpo { get; set; }
@@ -40,10 +41,57 @@ namespace Proyecto2.Objetos
         {
             this.esmetodo = false;
             this.esObjeto = false;
+            this.completaObjeto = false;
             this.entorno = null;
             this.parametros = new List<string>();
             this.tipo = "Error";
             this.nombre = "";
+            this.arreglo = new List<Tipo>();
+            this.visibilidad = "publico";
+        }
+
+        public Tipo(Tipo clon)
+        {
+            this.sobreescribe = clon.sobreescribe;
+            this.esArray = clon.esArray;
+            this.esmetodo = clon.esmetodo;
+            this.completaObjeto = clon.completaObjeto;
+            this.esObjeto = clon.esObjeto;
+            if (clon.entorno != null)
+            {
+            this.entorno = new Entorno (clon.entorno);
+            }else
+            {
+                this.entorno = null ;
+            }
+            this.cuerpo = clon.cuerpo;
+            this.tipo = clon.tipo;
+            this.nombre = clon.nombre;
+            this.visibilidad = clon.visibilidad;
+            this.fila = clon.fila;
+            this.columna = clon.columna;
+            this.valorString = clon.valorString;
+            this.valorBoleano = clon.valorBoleano;
+            this.valorEntero = clon.valorEntero;
+            this.valorDouble = clon.valorDouble;
+            this.valorChar = clon.valorChar;
+
+            this.arreglo = clon.arreglo;
+            this.tamano = clon.tamano;
+            this.parametros = clon.parametros;
+
+        }
+
+        public void limpiarTabla()
+        {
+            if (this.esmetodo)
+            {
+                if (this.entorno != null)
+                {
+                    this.entorno.limpiarTabla(parametros);
+                }
+                
+            }
         }
 
     }

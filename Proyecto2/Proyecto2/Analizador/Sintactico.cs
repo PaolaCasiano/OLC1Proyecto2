@@ -1,4 +1,5 @@
 ﻿using Irony.Parsing;
+using Proyecto2.Errores;
 using Proyecto2.Graficos;
 using Proyecto2.Objetos;
 using System;
@@ -8,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -25,7 +27,7 @@ namespace Proyecto2.Analizador
             token = new List<Token>();
         }
 
-        public  ParseTreeNode analizar(String cadena, RichTextBox consola)
+        public  ParseTreeNode analizar(String cadena, RichTextBox consola, RichTextBox variables)
         {
             Gramatica gramatica = new Gramatica();
             LanguageData lenguaje = new LanguageData(gramatica);
@@ -34,22 +36,30 @@ namespace Proyecto2.Analizador
             /*ParseTreeNode*/
             raiz = arbol.Root;
 
+            consola.Select(consola.TextLength, 0);
+            consola.SelectionColor = System.Drawing.Color.BlueViolet;
+            consola.AppendText("============================" + "\n");
             if (gramatica.Error.Count > 0 || raiz == null)
             {
                 MessageBox.Show("hay un error");
+                Reportes repErrores = new Reportes();
+                
                 errores = gramatica.Error;
+                repErrores.Errores(errores);
                 return null;
             }
             else
             {
                 token = arbol.Tokens;
                 generarImagen(raiz);
-                Accionar accion = new Accionar(consola);
+                Accionar accion = new Accionar(consola, variables);
                 accion.errores = errores;
                 accion.guardar(raiz);
                 if (accion.errores.Count > 0)
                 {
-                    MessageBox.Show("hay un error");
+                    MessageBox.Show("Existen Errores de ejecucion");
+                    Reportes repErrores = new Reportes();
+                    repErrores.Errores(accion.errores);
                     errores = accion.errores;
                     return null;
                 }
@@ -79,7 +89,9 @@ namespace Proyecto2.Analizador
                     }
                     if (accion.errores.Count > 0)
                     {
-                        MessageBox.Show("hay un error");
+                        MessageBox.Show("Existen errores de ejecucion");
+                        Reportes repErrores = new Reportes();
+                        repErrores.Errores(accion.errores);
                         errores = accion.errores;
                         return null;
                     }
@@ -98,6 +110,7 @@ namespace Proyecto2.Analizador
 
             String grafoDOT = ControlDot.getDOT(raiz);
             File.Create("Grafica.dot").Dispose();
+            Thread.Sleep(1000);
             TextWriter tw = new StreamWriter("Grafica.dot");
             tw.WriteLine(grafoDOT);
             tw.Close();

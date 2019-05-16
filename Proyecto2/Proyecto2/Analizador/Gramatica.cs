@@ -68,6 +68,8 @@ namespace Proyecto2.Analizador
                 , caracter = ToTerm("char", "char")
                 , stringo = ToTerm("string", "string")
                 , arreglo = ToTerm("array", "arreglo")
+                , verdadero1 = ToTerm("true","true")
+                , falso1 = ToTerm("false")
                 , nueva = ToTerm("new", "nueva")
                 , metodo = ToTerm("void", "void")
                 , sobreescribir = ToTerm("override", "override")
@@ -190,7 +192,9 @@ namespace Proyecto2.Analizador
                            | LISTACLASES
                            ;
 
-            LISTACLASES.Rule = clase + id + IMPORTAR + llavA + CUERPO + llavC
+            LISTACLASES.Rule = VISIBILIDAD +  clase + id + IMPORTAR + llavA + CUERPO + llavC
+                                | VISIBILIDAD + clase + id + llavA + CUERPO + llavC
+                                | clase + id + IMPORTAR + llavA + CUERPO + llavC
                                 | clase + id + llavA + CUERPO + llavC
                                 ;
 
@@ -370,13 +374,13 @@ namespace Proyecto2.Analizador
 
             CIRCLE.Rule = circle + pareA + E + coma + E + coma + E + coma + E + coma + E + pareC;
 
-            TRIANGLE.Rule = triangle + pareA + E + coma + E + coma + E + pareC;
+            TRIANGLE.Rule = triangle + pareA + E + coma + E + coma + E + coma + E + coma + E + coma + E + coma + E + coma + E + pareC;
 
             SQUARE.Rule = square + pareA + E + coma + E + coma + E + coma + E + coma + E + coma + E + pareC;
 
             LINE.Rule = line + pareA + E + coma + E + coma + E + coma + E + coma + E + coma + E + pareC;
 
-            FIGURE.Rule = figure + pareA + LISTAOBJETOS + pareC + semco;
+            FIGURE.Rule = figure + pareA + E + pareC + semco;
 
             E.Rule =
                 E + or + F
@@ -421,6 +425,8 @@ namespace Proyecto2.Analizador
                 | vchar
                 | verdadero
                 | falso
+                | verdadero1
+                | falso1
                 | LLAMAR
                 | NUEVACLASE
                 | LOCALMETODO
@@ -435,7 +441,8 @@ namespace Proyecto2.Analizador
             #region preferences 
             this.Root = S;
             MarkPunctuation(igual, coma, semco, punto, dospuntos, pareA, pareC, llavA, llavC, cora, corc);//<para quitar nodos basura :3
-            MarkPunctuation(retornar, show, para, si, sino, print, repetir, mientras, comprobar, clase, importar, main, hacer, nueva);
+            MarkPunctuation(addfigure, circle, triangle, square, line, figure);
+            MarkPunctuation(retornar, show, para, si, sino, print, repetir, mientras, comprobar, clase, importar, main, hacer, nueva, caso);
 
             #endregion
         }

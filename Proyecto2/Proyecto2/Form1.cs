@@ -1,6 +1,7 @@
 ﻿using Irony.Parsing;
 using Proyecto2.Analizador;
 using Proyecto2.Errores;
+using Proyecto2.Graficos;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -38,9 +39,22 @@ namespace Proyecto2
         {
             ListaErrores = new ArrayList();
             analizr = new Sintactico();
+            String textoanalizar = "";
+            rtbConsola.Text = "";
+
+            for (int i = 0; i < pestanas.TabPages.Count; i++)
+            {
+                if (pestanas.TabPages[i] != pestanas.SelectedTab)
+                {
+                    textoanalizar += pestanas.TabPages[i].Controls.OfType<FastColoredTextBoxNS.FastColoredTextBox>().Reverse().FirstOrDefault().Text.Replace("\\", "\\\\");
+                }
+            }
+
+
+
             FastColoredTextBoxNS.FastColoredTextBox seleccion  = pestanas.SelectedTab.Controls.OfType<FastColoredTextBoxNS.FastColoredTextBox>().Reverse().FirstOrDefault();
 
-            resultado = analizr.analizar(seleccion.Text.Replace("\\", "\\\\"), rtbConsola);
+            resultado = analizr.analizar(textoanalizar + seleccion.Text.Replace("\\", "\\\\"), rtbConsola, rtbVariables);
             if (resultado != null)
             {
                 ListaTokens = analizr.Tokens;
@@ -113,6 +127,15 @@ namespace Proyecto2
 
         private void reporteDeErroresToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            try
+            {
+                Process.Start("Errores.html");
+            }
+            catch (Exception)
+            {
+                
+            }
+            
         }
 
         private void nuevoToolStripMenuItem_Click(object sender, EventArgs e)
@@ -160,6 +183,12 @@ namespace Proyecto2
             
 
             return myTabPage;
+        }
+
+        private void pruebaImagenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Dibujar d = new Dibujar();
+            d.dibujo(null,"prueba");
         }
     }
 }

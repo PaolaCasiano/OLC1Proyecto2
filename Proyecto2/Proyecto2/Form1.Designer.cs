@@ -41,7 +41,7 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.rtbConsola = new System.Windows.Forms.RichTextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.richTextBox2 = new System.Windows.Forms.RichTextBox();
+            this.rtbVariables = new System.Windows.Forms.RichTextBox();
             this.btnAnalizar = new System.Windows.Forms.Button();
             this.tab0 = new System.Windows.Forms.TabPage();
             this.seleccionada = new FastColoredTextBoxNS.FastColoredTextBox();
@@ -163,7 +163,7 @@
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.richTextBox2);
+            this.tabPage2.Controls.Add(this.rtbVariables);
             this.tabPage2.Font = new System.Drawing.Font("Yu Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tabPage2.ForeColor = System.Drawing.SystemColors.ControlLightLight;
             this.tabPage2.Location = new System.Drawing.Point(4, 23);
@@ -174,13 +174,13 @@
             this.tabPage2.Text = "Variables";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // richTextBox2
+            // rtbVariables
             // 
-            this.richTextBox2.Location = new System.Drawing.Point(0, 0);
-            this.richTextBox2.Name = "richTextBox2";
-            this.richTextBox2.Size = new System.Drawing.Size(887, 114);
-            this.richTextBox2.TabIndex = 0;
-            this.richTextBox2.Text = "";
+            this.rtbVariables.Location = new System.Drawing.Point(0, 0);
+            this.rtbVariables.Name = "rtbVariables";
+            this.rtbVariables.Size = new System.Drawing.Size(887, 114);
+            this.rtbVariables.TabIndex = 0;
+            this.rtbVariables.Text = "";
             // 
             // btnAnalizar
             // 
@@ -268,7 +268,7 @@
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.RichTextBox rtbConsola;
         private System.Windows.Forms.TabPage tabPage2;
-        private System.Windows.Forms.RichTextBox richTextBox2;
+        private System.Windows.Forms.RichTextBox rtbVariables;
         private System.Windows.Forms.Button btnAnalizar;
         private System.Windows.Forms.ToolStripMenuItem nuevoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem abrirToolStripMenuItem;

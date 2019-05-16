@@ -10,3 +10,4 @@ C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio
 C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\bin\Debug\FastColoredTextBox.xml
 C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\obj\Debug\Proyecto2.exe
 C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\obj\Debug\Proyecto2.pdb
+C:\Users\Paola\Documents\USAC\1erSemestre2019\LenguajesyCompiladores\Laboratorio\Proyecto2\Proyecto\Proyecto2\Proyecto2\obj\Debug\Proyecto2.Graficos.Dibujo.resources

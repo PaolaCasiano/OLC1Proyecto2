@@ -1,5 +1,6 @@
 ﻿using Irony.Parsing;
 using Proyecto2.Errores;
+using Proyecto2.Graficos;
 using Proyecto2.Objetos;
 using System;
 using System.Collections;
@@ -16,15 +17,17 @@ namespace Proyecto2.Analizador
     class Accionar
     {
         public Entorno principal = null;
-        public RichTextBox consola;
+        public RichTextBox consola, variables;
         Hashtable listaEntornos = new Hashtable();
         public Entorno actual;
         Validacion val;
         bool ejecutando;
+        public List<Figura> figuras = new List<Figura>();
 
-        public Accionar(RichTextBox console)
+        public Accionar(RichTextBox console, RichTextBox variables)
         {
             this.consola = console;
+            this.variables = variables;
         }
 
         public ArrayList errores { get; set; }
@@ -43,16 +46,34 @@ namespace Proyecto2.Analizador
                         guardar(hijo);
                         break;
                     case "LISTACLASES":
-                        if (listaEntornos.ContainsKey("ent_" + hijo.ChildNodes[0].Token.Text)) 
+                        if(hijo.ChildNodes[0].Token != null)
                         {
-                            errores.Add(new Error(hijo.ChildNodes[0].Token.Location.Line, hijo.ChildNodes[0].Token.Location.Column, "Semantico", "Ya existe una Clase llamada " + hijo.ChildNodes[0].Token.Text));
-                        }
-                        else
+                            if (listaEntornos.ContainsKey("ent_" + hijo.ChildNodes[0].Token.Text.ToLower()))
+                            {
+                                errores.Add(new Error(hijo.ChildNodes[0].Token.Location.Line, hijo.ChildNodes[0].Token.Location.Column, "Semantico", "Ya existe una Clase llamada " + hijo.ChildNodes[0].Token.Text));
+                            }
+                            else
+                            {
+                                actual = new Entorno(hijo.ChildNodes[0].Token.Text.ToLower());
+                                listaEntornos.Add("ent_" + hijo.ChildNodes[0].Token.Text.ToLower(), actual);
+                                guardar(hijo);
+                            }
+                        }else
                         {
-                            actual = new Entorno(hijo.ChildNodes[0].Token.Text.ToLower());
-                            listaEntornos.Add("ent_" + hijo.ChildNodes[0].Token.Text.ToLower(), actual);
-                            guardar(hijo);
+                            if (listaEntornos.ContainsKey("ent_" + hijo.ChildNodes[1].Token.Text.ToLower()))
+                            {
+                                errores.Add(new Error(hijo.ChildNodes[1].Token.Location.Line, hijo.ChildNodes[1].Token.Location.Column, "Semantico", "Ya existe una Clase llamada " + hijo.ChildNodes[1].Token.Text));
+                            }
+                            else
+                            {
+                                actual = new Entorno(hijo.ChildNodes[1].Token.Text.ToLower());
+                                actual.visibilidad = hijo.ChildNodes[0].ChildNodes[0].Token.Text.ToLower();
+                                listaEntornos.Add("ent_" + hijo.ChildNodes[1].Token.Text.ToLower(), actual);
+                                guardar(hijo);
+                            }
                         }
+
+                       
                         
                         break;
                     case "CUERPO":
@@ -86,6 +107,7 @@ namespace Proyecto2.Analizador
                                 timain.esmetodo = true;
                                 timain.tipo = "main";
                                 timain.entorno = new Entorno("main", actual);
+                                timain.entorno.metodoPrincipal = timain.entorno;
                                 //timain.entorno.siguiente = actual;
                                 timain.cuerpo = hijo.ChildNodes[0];
                                 actual.HT.Add("main", timain);
@@ -103,7 +125,6 @@ namespace Proyecto2.Analizador
                 }
             }
         }
-
 
         private void declararMetosG(ParseTreeNode nodo, ref Entorno ent)
         {
@@ -170,6 +191,7 @@ namespace Proyecto2.Analizador
             metodo.nombre = id;
             metodo.esArray = esArray;
             metodo.tipo = tipo;
+            
             if (esArray)
             {
                 metodo.tamano = tamano;
@@ -182,6 +204,7 @@ namespace Proyecto2.Analizador
                 metodo.entorno.retorna = true;
             }
             agregarParametros(parametros, ref metodo);
+            metodo.entorno.metodoPrincipal = metodo.entorno;
             //metodo.entorno = entorno;
             actual.HT.Add("met_" + metodo.nombre.ToLower(), metodo);
             //Console.WriteLine("hola");
@@ -233,76 +256,509 @@ namespace Proyecto2.Analizador
         public void ejecutar(ParseTreeNode padre, ref Entorno actual)
         {
             ejecutando = true;
-            foreach (ParseTreeNode hijo in padre.ChildNodes)
+            if(actual.metodoPrincipal!= null)
             {
-                switch (hijo.ToString())
+                if(actual.metodoPrincipal.Retorno != null) { return; }
+            }
+            if( !actual.salir)
+            {
+
+                foreach (ParseTreeNode hijo in padre.ChildNodes)
                 {
-                    case "CUERPOMETODO":
-                        ejecutar(hijo, ref actual);
-                        break;
-                    case "INICIO":
-                        ejecutar(hijo, ref actual);
-                        break;
-                    case "FUNCIONMETODO":
-                        ejecutar(hijo, ref actual);
-                        break;
-                    case "DECLARACIONOBJETO":
-                        AgregarVariables(hijo, ref actual);
-                        break;
-                    case "DECLARACION":
-                        AgregarVariables(hijo, ref actual);
-                        break;
-                    case "ASIGNACION":
-                        ejecutarAsignacion(hijo, ref actual);
-                        break;
-                    case "LLAMAR":
-                        ejecutarLlamada(hijo, false, ref actual);
-                        break;
-                    case "PRINT":
-                        print(hijo, ref actual);
-                        break;
-                    case "SHOW":
-                        show(hijo, ref actual);
-                        break;
-                    case "SI":
-                        ejecutarIf(hijo, ref actual);
-                        break;
-                    case "RETORNAR":
-                        Retornar(hijo, ref actual);
-                        break;
-                    case "PARA":
-                        ejecutarFor(hijo, ref actual);
-                        break;
-                    case "REPETIR":
-                        repetir(hijo, ref actual);
-                        break;
-                    case "MIENTRAS":
-                        mientras(hijo, ref actual);
-                        break;
-                    case "COMPROBAR":
-                        break;
-                    case "HACERMIENTRAS":
-                        hacerMientras(hijo, ref actual);
-                        break;
-                    case "AUMENTODECREMENTO":
-                        aumentoDecremento(hijo, ref actual);
-                        break;
-                    case "LOCALMETODO":
-                        ejecutarMetodoLocal(hijo, false, ref actual);//es una asignacion, siempre debe devolver algo 7n7
-                        break;
+                    switch (hijo.ToString())
+                    {
+                        case "CUERPOMETODO":
+                            ejecutar(hijo, ref actual);
+                            break;
+                        case "INICIO":
+                            ejecutar(hijo, ref actual);
+                            break;
+                        case "FUNCIONMETODO":
+                            ejecutar(hijo, ref actual);
+                            break;
+                        case "DECLARACIONOBJETO":
+                            AgregarVariables(hijo, ref actual);
+                            break;
+                        case "DECLARACION":
+                            AgregarVariables(hijo, ref actual);
+                            break;
+                        case "ASIGNACION":
+                            ejecutarAsignacion(hijo, ref actual);
+                            break;
+                        case "LLAMAR":
+                            ejecutarLlamada(hijo, false, ref actual);
+                            break;
+                        case "PRINT":
+                            print(hijo, ref actual);
+                            break;
+                        case "SHOW":
+                            show(hijo, ref actual);
+                            break;
+                        case "SI":
+                            ejecutarIf(hijo, ref actual);
+                            break;
+                        case "RETORNAR":
+                            Retornar(hijo, ref actual);
+                            break;
+                        case "PARA":
+                            ejecutarFor(hijo, ref actual);
+                            break;
+                        case "REPETIR":
+                            repetir(hijo, ref actual);
+                            break;
+                        case "MIENTRAS":
+                            mientras(hijo, ref actual);
+                            break;
+                        case "COMPROBAR":
+                            comprobar(hijo, ref actual);
+                            break;
+                        case "HACERMIENTRAS":
+                            hacerMientras(hijo, ref actual);
+                            break;
+                        case "AUMENTODECREMENTO":
+                            aumentoDecremento(hijo, ref actual);
+                            break;
+                        case "LOCALMETODO":
+                            ejecutarMetodoLocal(hijo, false, ref actual);//es una asignacion, siempre debe devolver algo 7n7
+                            break;
+                        case "SALIR":
+                            if (actual.esCiclo)
+                            {
+                                actual.salir = true;
+                            }else
+                            {
+                                errores.Add(new Error(hijo.ChildNodes[0].ChildNodes[0].Token.Location.Line, hijo.ChildNodes[0].ChildNodes[0].Token.Location.Column, "Semantico", "Sentencia Salir en ambito incorrecto "));
+                            }
+                            
+                            break;
+                        case "ADDFIGURE":
+                            ejecutar(hijo, ref actual);
+                            break;
+                        case "LFIGURA":
+                            ejecutar(hijo, ref actual);
+                            break;
+                        case "CIRCLE":
+                            anadirCirculo(hijo, ref actual);
+                            break;
+                        case "TRIANGLE":
+                            anadirTriangulo(hijo, ref actual);
+                            break;
+                        case "SQUARE":
+                            anadirCuadrado(hijo, ref actual);
+                            break;
+                        case "LINE":
+                            anadirLinea(hijo, ref actual);
+                            break;
+                        case "FIGURE":
+                            pintarFiguras(hijo, ref actual);
+                            break;
 
-
+                    }
                 }
             }
             
+            
+        }
+
+        private void pintarFiguras(ParseTreeNode hijo, ref Entorno actual)
+        {
+            Tipo nombre = Verificacion(hijo.ChildNodes[0], ref actual);
+            if(nombre.tipo.Equals("cadena", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (errores.Count == 0)
+                {
+                    Dibujar dibujar = new Dibujar();
+                    dibujar.dibujo(figuras, nombre.valorString);
+                    figuras.Clear();
+                }
+                
+            }else
+            {
+                errores.Add(new Error(nombre.fila, nombre.columna, "Semantico", "El nombre del grafico debe ser tipo cadena "));
+            }
+
+        }
+
+        private void anadirLinea(ParseTreeNode hijo, ref Entorno actual)
+        {
+            Tipo color = Verificacion(hijo.ChildNodes[0], ref actual);
+            Tipo posx = Verificacion(hijo.ChildNodes[1], ref actual);
+            Tipo posy = Verificacion(hijo.ChildNodes[2], ref actual);
+            Tipo posfx = Verificacion(hijo.ChildNodes[3], ref actual);
+            Tipo posfy = Verificacion(hijo.ChildNodes[4], ref actual);
+            Tipo thickness = Verificacion(hijo.ChildNodes[5], ref actual);
+            Figura linea = new Figura();
+            linea.tipo = "linea";
+
+            if (color.tipo.Equals("cadena", StringComparison.InvariantCultureIgnoreCase))
+            {
+                linea.color = color.valorString;
+            }
+            else
+            {
+                errores.Add(new Error(color.fila, color.columna, "Semantico", "El color de una linea debe ser de tipo cadena "));
+                return;
+            }
+
+            if (thickness.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || thickness.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                linea.grosor = thickness.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(thickness.fila, thickness.columna, "Semantico", "el dato de grosor de una linea debe ser entero"));
+                return;
+            }
+
+            if (posx.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || posx.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                linea.posx = posx.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(posx.fila, posx.columna, "Semantico", "La posicion X de una linea debe ser un entero"));
+                return;
+            }
+
+            if (posy.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase)|| posy.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                linea.posy = posy.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(posy.fila, posy.columna, "Semantico", "La posicion y de una linea debe ser un entero"));
+                return;
+            }
+
+            if (posfx.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || posfx.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                linea.posxf = posfx.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(posfx.fila, posfx.columna, "Semantico", "La posicion final X de una linea debe ser un entero"));
+                return;
+            }
+
+            if (posfy.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || posfy.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                linea.posyf = posfy.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(posfy.fila, posfy.columna, "Semantico", "La posicion final y de una linea debe ser un entero"));
+                return;
+            }
+            figuras.Add(linea);
+        }
+
+        private void anadirCuadrado(ParseTreeNode hijo, ref Entorno actual)
+        {
+            Tipo color = Verificacion(hijo.ChildNodes[0], ref actual);
+            Tipo solido = Verificacion(hijo.ChildNodes[1], ref actual);
+            Tipo posx = Verificacion(hijo.ChildNodes[2], ref actual);
+            Tipo posy = Verificacion(hijo.ChildNodes[3], ref actual);
+            Tipo weight = Verificacion(hijo.ChildNodes[4], ref actual);
+            Tipo height = Verificacion(hijo.ChildNodes[5], ref actual);
+            Figura cuadrado = new Figura();
+            cuadrado.tipo = "cuadrado";
+            if (color.tipo.Equals("cadena", StringComparison.InvariantCultureIgnoreCase))
+            {
+                cuadrado.color = color.valorString;
+            }
+            else
+            {
+                errores.Add(new Error(color.fila, color.columna, "Semantico", "El color de un cuadrado debe ser de tipo cadena "));
+                return;
+            }
+
+            if (solido.tipo.Equals("booleano", StringComparison.InvariantCultureIgnoreCase))
+            {
+                cuadrado.solida = solido.valorBoleano;
+            }
+            else
+            {
+                errores.Add(new Error(solido.fila, solido.columna, "Semantico", "el dato solido de un cuadrado debe ser booleano "));
+                return;
+            }
+
+            if (posx.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || posx.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                cuadrado.posx = posx.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(posx.fila, posx.columna, "Semantico", "La posicion X de un cuadrado debe ser un entero"));
+                return;
+            }
+
+            if (posy.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || posy.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                cuadrado.posy = posy.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(posy.fila, posy.columna, "Semantico", "La posicion y de un cuadrado debe ser un entero"));
+                return;
+            }
+
+            if (weight.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase))
+            {
+                cuadrado.width = weight.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(weight.fila, weight.columna, "Semantico", "El ancho de un cuadrado debe ser un entero"));
+                return;
+            }
+
+            if (height.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || height.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                cuadrado.height = height.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(height.fila, height.columna, "Semantico", "El largo de un cuadrado debe ser un entero"));
+                return;
+            }
+            figuras.Add(cuadrado);
+
+        }
+
+        private void anadirTriangulo(ParseTreeNode hijo, ref Entorno actual)
+        {
+            Tipo color = Verificacion(hijo.ChildNodes[0], ref actual);
+            Tipo solido = Verificacion(hijo.ChildNodes[1], ref actual);
+            Tipo posx = Verificacion(hijo.ChildNodes[2], ref actual);
+            Tipo posy = Verificacion(hijo.ChildNodes[3], ref actual);
+            Tipo pos2x = Verificacion(hijo.ChildNodes[4], ref actual);
+            Tipo pos2y = Verificacion(hijo.ChildNodes[5], ref actual);
+            Tipo pos3x = Verificacion(hijo.ChildNodes[6], ref actual);
+            Tipo pos3y = Verificacion(hijo.ChildNodes[7], ref actual);
+            Figura triangulo = new Figura();
+            triangulo.tipo = "triangulo";
+
+            if (color.tipo.Equals("cadena", StringComparison.InvariantCultureIgnoreCase))
+            {
+                triangulo.color = color.valorString;
+            }
+            else
+            {
+                errores.Add(new Error(color.fila, color.columna, "Semantico", "El color de un triangulo debe ser de tipo cadena "));
+                return;
+            }
+
+            if (solido.tipo.Equals("booleano", StringComparison.InvariantCultureIgnoreCase))
+            {
+                triangulo.solida = solido.valorBoleano;
+            }
+            else
+            {
+                errores.Add(new Error(solido.fila, solido.columna, "Semantico", "el dato solido de un triangulo debe ser booleano "));
+                return;
+            }
+
+            if (posx.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || posx.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                triangulo.vx1 = posx.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(posx.fila, posx.columna, "Semantico", "La posicion X de un triangulo debe ser un entero"));
+                return;
+            }
+
+            if (posy.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) ||posy.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                triangulo.vy1 = posy.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(posy.fila, posy.columna, "Semantico", "La posicion y de un triangulo debe ser un entero"));
+                return;
+            }
+
+            if (pos2x.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || pos2x.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                triangulo.vx2 = pos2x.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(pos2x.fila, pos2x.columna, "Semantico", "La posicion X de un triangulo debe ser un entero"));
+                return;
+            }
+
+            if (pos2y.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || pos2y.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                triangulo.vy2 = pos2y.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(pos2y.fila, pos2y.columna, "Semantico", "La posicion y de un triangulo debe ser un entero"));
+                return;
+            }
+
+            if (pos3x.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || pos3x.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                triangulo.vx3 = pos3x.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(pos3x.fila, pos3x.columna, "Semantico", "La posicion X de un triangulo debe ser un entero"));
+                return;
+            }
+
+            if (pos3y.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || pos3y.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                triangulo.vy3 = pos3y.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(pos3y.fila, pos3y.columna, "Semantico", "La posicion y de un triangulo debe ser un entero"));
+                return;
+            }
+            figuras.Add(triangulo);
+
+
+        }
+
+        private void anadirCirculo(ParseTreeNode hijo, ref Entorno actual)
+        {
+            Tipo color = Verificacion(hijo.ChildNodes[0], ref actual);
+            Tipo radio = Verificacion(hijo.ChildNodes[1], ref actual);
+            Tipo solido = Verificacion(hijo.ChildNodes[2], ref actual);
+            Tipo posx = Verificacion(hijo.ChildNodes[3], ref actual);
+            Tipo posy = Verificacion(hijo.ChildNodes[4], ref actual);
+            Figura circulo = new Figura();
+            circulo.tipo = "circulo";
+
+            if (color.tipo.Equals("cadena", StringComparison.InvariantCultureIgnoreCase))
+            {
+                circulo.color = color.valorString;
+            }
+            else
+            {
+                errores.Add(new Error(color.fila, color.columna, "Semantico", "El color de un circulo debe ser de tipo cadena "));
+                return;
+            }
+
+            if (radio.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || radio.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                circulo.radio = radio.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(radio.fila, radio.columna, "Semantico", "El radio de un circulo debe ser tipo entero "));
+                return;
+            }
+
+            if (solido.tipo.Equals("booleano", StringComparison.InvariantCultureIgnoreCase))
+            {
+                circulo.solida = solido.valorBoleano;
+            }
+            else
+            {
+                errores.Add(new Error(solido.fila, solido.columna, "Semantico", "el dato solido de un circulo debe ser booleano "));
+                return;
+            }
+
+            if (posx.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase)|| posx.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                circulo.posx = posx.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(posx.fila, posx.columna, "Semantico", "La posicion X de un circulo debe ser un entero"));
+                return;
+            }
+
+            if (posy.tipo.Equals("entero", StringComparison.InvariantCultureIgnoreCase) || posy.tipo.Equals("decimal", StringComparison.InvariantCultureIgnoreCase))
+            {
+                circulo.posy = posy.valorEntero;
+            }
+            else
+            {
+                errores.Add(new Error(posy.fila, posy.columna, "Semantico", "La posicion y de un circulo debe ser un entero"));
+                return;
+            }
+            figuras.Add(circulo);
+        }
+
+        private void comprobar(ParseTreeNode hijo, ref Entorno actual)
+        {
+            Tipo switchon = Verificacion(hijo.ChildNodes[0], ref actual);
+            if (switchon.esArray)
+            {
+                errores.Add(new Error(hijo.ChildNodes[0].Token.Location.Line, hijo.ChildNodes[0].Token.Location.Column, "Semantico", "No puede compararse un arreglo en un COMPROBAR " ));
+                return;
+            }
+            ejecutarcaso(hijo.ChildNodes[1], switchon, ref actual);
+           
+        }
+
+        private bool ejecutarcaso(ParseTreeNode nodo, Tipo switchon, ref Entorno ent)
+        {
+            switch (nodo.ChildNodes.Count)
+            {
+                case 1:
+                    return continuarCaso(nodo.ChildNodes[0], switchon, ref actual);
+                case 2:
+                    if(nodo.ChildNodes[1].ChildNodes.Count == 1)
+                    {
+                        ent.defecto = nodo.ChildNodes[1].ChildNodes[0];
+                        return ejecutarcaso(nodo.ChildNodes[0], switchon, ref actual);
+
+                        //return true;
+                    }
+                    bool seguir = ejecutarcaso(nodo.ChildNodes[0], switchon, ref actual);
+                    if (seguir)
+                    {
+                        seguir = continuarCaso(nodo.ChildNodes[1], switchon, ref actual);
+                        return seguir;
+                    }
+                    break;
+            }
+            ejecutar(ent.defecto, ref ent);
+            return false;
+        }
+
+        private bool continuarCaso(ParseTreeNode nodo, Tipo swichon, ref Entorno ent)
+        {
+            if (ent.salir)
+            {
+                return false;
+            }
+            Tipo caso = Verificacion(nodo.ChildNodes[0], ref ent);
+            if(caso.tipo != swichon.tipo)
+            {
+                errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "No puede compararse una variable tipo  "+ swichon.tipo + " con una variable " + caso.tipo));
+                return false;
+            }
+            if (caso.esArray)
+            {
+                errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "Un arreglo no p uede tratarse como caso"));
+                return false;
+            }
+
+            if(caso.valorString.Equals(swichon.valorString, StringComparison.InvariantCultureIgnoreCase))
+            {
+                Entorno comp = new Entorno("switchcase", ent);
+                ejecutar(nodo.ChildNodes[1], ref comp);
+                return !comp.salir;
+            }
+
+            return true;
+
+
         }
 
         public Entorno agregarEntorno(ParseTreeNode hijo, ref Entorno ent)
         {
-            String nombre = hijo.ChildNodes[0].Token.Text.ToLower();
+            String nombre="";
             switch (hijo.ChildNodes.Count)
             {
                 case 1:
+                    nombre =  hijo.ChildNodes[0].Token.Text.ToLower();
                     if (listaEntornos.ContainsKey("ent_" + nombre ))
                     {
                         
@@ -313,6 +769,7 @@ namespace Proyecto2.Analizador
                     }
                     break;
                 case 2:
+                    nombre = hijo.ChildNodes[1].Token.Text.ToLower();
                     if (listaEntornos.ContainsKey("ent_" + nombre))
                     {
                         //string key = hijo.ChildNodes[1].Token.Text;
@@ -414,7 +871,7 @@ namespace Proyecto2.Analizador
                           , true
                           , Padre.ChildNodes[2]
                           , getTamano(Padre.ChildNodes[3], new List<int>(), ref ent)
-                          , new Tipo()//Verificacion(Padre.ChildNodes[3].ChildNodes[0])
+                          , Verificacion(Padre.ChildNodes[4].ChildNodes[0], ref ent)
                           , ref ent
                           );
                     }
@@ -427,7 +884,7 @@ namespace Proyecto2.Analizador
                          , true
                          , Padre.ChildNodes[3]
                          , getTamano(Padre.ChildNodes[4], new List<int>(), ref ent)
-                         , new Tipo()//Verificacion(Padre.ChildNodes[3].ChildNodes[0])
+                         , Verificacion(Padre.ChildNodes[5].ChildNodes[0], ref ent)
                          , ref ent
                          );
                     break;
@@ -477,15 +934,26 @@ namespace Proyecto2.Analizador
             }
             else
             {
-                if (tipo.Equals(value.tipo,StringComparison.InvariantCultureIgnoreCase))
+
+                Validacion validar = compatibles(tipo, value.tipo);
+                //if (tipo.Equals(value.tipo,StringComparison.InvariantCultureIgnoreCase))
+                if(validar.valido)
                 {
                     String nombre = ids.Token.Text;
                     if (!actual.HT.Contains("var_" + nombre.ToLower()))
                     {
+                        if (arreglo != value.esArray)
+                        {
+                            errores.Add(new Error(
+                                ids.Token.Location.Line
+                                , ids.Token.Location.Column
+                                , "Semantico"
+                                , "No se puede asignar a " + (arreglo?"un arreglo tipo ":"una variable tipo ") + tipo + (value.esArray?" un arreglo tipo ": " una variable tipo " + value.tipo )));
+                        }
                         Tipo var = value;
                         var.nombre = nombre;
                         var.visibilidad = visibilidad;
-                        var.tipo = tipo;
+                        var.tipo = validar.tipo;
                         var.esArray = arreglo;
                         if (arreglo)
                         {
@@ -499,7 +967,7 @@ namespace Proyecto2.Analizador
                     }
                 }else
                 {
-                    errores.Add(new Error(ids.Token.Location.Line, ids.Token.Location.Column, "Semantico", "No se puede declarar a un tipo "+tipo+" un valor tipo "+value.tipo));
+                    errores.Add(new Error(ids.Token.Location.Line, ids.Token.Location.Column, "Semantico", "1. No se puede declarar a un tipo "+tipo+" un valor tipo "+value.tipo));
                 }
                
             }
@@ -518,7 +986,7 @@ namespace Proyecto2.Analizador
                         return lista;
                     }else
                     {
-                        errores.Add(new Error(numer.fila, numer.columna, "Semantico", "No se puede declarar a un tipo " + numer.tipo+ " como tamaño de un arreglo"));
+                        errores.Add(new Error(numer.fila, numer.columna, "Semantico", "2. No se puede declarar a un tipo " + numer.tipo+ " como tamaño de un arreglo"));
                     }
                     break;
                 case 2:
@@ -532,7 +1000,7 @@ namespace Proyecto2.Analizador
                         }
                         else
                         {
-                            errores.Add(new Error(numer.fila, numer.columna, "Semantico", "No se puede declarar a un tipo " + numer.tipo + " como tamaño de un arreglo"));
+                            errores.Add(new Error(numer.fila, numer.columna, "Semantico", "3. No se puede declarar a un tipo " + numer.tipo + " como tamaño de un arreglo"));
                         }
                         
                     }
@@ -563,9 +1031,18 @@ namespace Proyecto2.Analizador
                                         Tipo ret = buscarVariable(nodo.ChildNodes[1].Token.Text, variable.entorno, false);
                                         if(ret!= null)
                                         {
+                                            if (ret.visibilidad.Equals("privado", StringComparison.InvariantCultureIgnoreCase))
+                                            {
+                                                errores.Add(
+                                                new Error(nodo.ChildNodes[1].Token.Location.Line
+                                                , nodo.ChildNodes[1].Token.Location.Column
+                                                , "Semántico"
+                                                , "La variable " + nodo.ChildNodes[1].Token.Text + " es privada "));
+                                            }
                                             return ret;
                                         }else
                                         {
+
                                             errores.Add(
                                             new Error(nodo.ChildNodes[1].Token.Location.Line
                                             , nodo.ChildNodes[1].Token.Location.Column
@@ -629,7 +1106,7 @@ namespace Proyecto2.Analizador
                                     //LLAMAR A UN METODO DE LA MISMA CLASE 
                                     if (ejecutando)
                                     {
-                                        return ejecutarMetodoLocal(nodo.ChildNodes[0], false, ref actual); //no es necesario devolver un valor aca :3
+                                        return ejecutarMetodoLocal(nodo.ChildNodes[0], true, ref actual); //no es necesario devolver un valor aca :3
                                     }
                                     else
                                     {
@@ -642,13 +1119,14 @@ namespace Proyecto2.Analizador
                                     break;
                                 case "OBJETO":
                                     //CREAR UN OBJETO TIPO {{},{}}
-                                    crearObjeto(nodo.ChildNodes[0]);
-                                    break;
+                                    Tipo retor = crearObjeto(nodo.ChildNodes[0], ref actual);
+                                    Console.WriteLine(retor.tipo);
+                                    return retor;
                                 case "VALORARRAY":
                                     //BUSCAR UN ARRAY Y BUSCAR LA POSCION ARREGLO[POSICION]
                                     if (ejecutando)
                                     {
-                                        
+                                        return valorArreglo(nodo.ChildNodes[0], ref actual);
                                     }
                                     else
                                     {
@@ -677,7 +1155,7 @@ namespace Proyecto2.Analizador
                                                 nuevo = new Tipo();
                                                 nuevo.fila = nodo.ChildNodes[0].Token.Location.Line;
                                                 nuevo.columna = nodo.ChildNodes[0].Token.Location.Column;
-                                                errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "No existe la variable " + name));
+                                                errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "1. No existe la variable " + name));
                                             }
                                             else
                                             {
@@ -757,6 +1235,20 @@ namespace Proyecto2.Analizador
                                             nuevo.valorDouble = 0;
                                             nuevo.valorString = "falso";
                                             break;
+                                        case "true":
+                                            nuevo.tipo = "booleano";
+                                            nuevo.valorBoleano = true;
+                                            nuevo.valorEntero = 1;
+                                            nuevo.valorDouble = 1;
+                                            nuevo.valorString = "verdadero";
+                                            break;
+                                        case "false":
+                                            nuevo.tipo = "booleano";
+                                            nuevo.valorBoleano = false;
+                                            nuevo.valorEntero = 0;
+                                            nuevo.valorDouble = 0;
+                                            nuevo.valorString = "falso";
+                                            break;
 
                                     }
                                     return nuevo;
@@ -808,10 +1300,55 @@ namespace Proyecto2.Analizador
             return terror;//D:
         }
 
+        private Tipo valorArreglo(ParseTreeNode nodo, ref Entorno actual)
+        {
+            Tipo arreglo = buscarVariable(nodo.ChildNodes[0].Token.Text,  actual, false);
+            
+
+            if (arreglo == null)
+            {
+                errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "No se encontro la variable " + nodo.ChildNodes[0].Token.Text));
+                return new Tipo();
+            }
+            int fila = arreglo.fila, columna = arreglo.columna;
+            if (arreglo.esArray)
+            {
+                List<int> posicion = getTamano(nodo.ChildNodes[1], new List<int>() , ref actual);
+                if(arreglo.arreglo.Count > 0)
+                {
+                    for (int i = 0; i < posicion.Count; i++)
+                    {
+                        if(arreglo.arreglo.Count > posicion[i])
+                        {
+                            arreglo = arreglo.arreglo[posicion[i]];
+                        }else
+                        {
+                            errores.Add(new Error(fila, columna, "Semantico", "Indice sobrepasa los limites "));
+                            break;
+                        }
+                    }
+                }
+            }else
+            {
+                errores.Add(new Error(fila, columna, "Semantico", "La variable " + arreglo.nombre + " no es un arreglo"));
+            }
+
+            return arreglo;
+        }
+
         private Tipo comprobacionTipos(Tipo v1, string op, Tipo v2)
         {
             Tipo retorno = new Tipo() ;
             retorno.tipo = "Error";
+            if(v2 != null)
+            {
+                if(v2.esArray)
+                    errores.Add(new Error(v2.fila, v1.columna, "Semantico", "No se pueden operar Arreglos"));
+            }
+            if(v1.esArray )
+            {
+                errores.Add(new Error(v1.fila, v1.columna, "Semantico", "No se pueden operar Arreglos"));
+            }
             switch (op)
             {
                 case "||":
@@ -883,29 +1420,55 @@ namespace Proyecto2.Analizador
                     break;
 
                 case "-":
-                    val = validoResta(v1.tipo, v2.tipo);
-                    if (val.valido)
+                    if(v2 == null)
                     {
-                        retorno.tipo = val.tipo;
-                        switch (val.tipo)
+                        retorno.tipo = v1.tipo;
+                        switch (v1.tipo)
                         {
                             
                             case "decimal":
-                                retorno.valorDouble = v1.valorDouble - v2.valorDouble;
+                                retorno.valorDouble = v1.valorDouble * -1;
                                 retorno.valorEntero = Convert.ToInt32(retorno.valorDouble);
                                 retorno.valorString = retorno.valorDouble.ToString();
                                 break;
                             case "entero":
-                                retorno.valorEntero = v1.valorEntero - v2.valorEntero;
-                                retorno.valorDouble = retorno.valorEntero;                                
+                                retorno.valorEntero = v1.valorEntero * -1;
+                                retorno.valorDouble = retorno.valorEntero;
                                 retorno.valorString = retorno.valorEntero.ToString();
                                 break;
+                            default:
+                                retorno.tipo = "Error";
+                                errores.Add(new Error(v1.fila, v1.columna, "Semantico", "No puede operar un negativo de un tipo "+v1.tipo));
+                                break;
+
+                        }
+                    }else
+                    {
+                        val = validoResta(v1.tipo, v2.tipo);
+                        if (val.valido)
+                        {
+                            retorno.tipo = val.tipo;
+                            switch (val.tipo)
+                            {
+
+                                case "decimal":
+                                    retorno.valorDouble = v1.valorDouble - v2.valorDouble;
+                                    retorno.valorEntero = Convert.ToInt32(retorno.valorDouble);
+                                    retorno.valorString = retorno.valorDouble.ToString();
+                                    break;
+                                case "entero":
+                                    retorno.valorEntero = v1.valorEntero - v2.valorEntero;
+                                    retorno.valorDouble = retorno.valorEntero;
+                                    retorno.valorString = retorno.valorEntero.ToString();
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            errores.Add(new Error(v1.fila, v1.columna, "Semantico", val.mensaje));
                         }
                     }
-                    else
-                    {
-                        errores.Add(new Error(v1.fila, v1.columna, "Semantico", val.mensaje));
-                    }
+                    
                     break;
 
                 case "*":
@@ -1072,7 +1635,7 @@ namespace Proyecto2.Analizador
                     else
                     {
                         retorno.tipo = "booleano";
-                        retorno.valorBoleano = v1.valorDouble > v2.valorDouble;
+                        retorno.valorBoleano = v1.valorDouble <= v2.valorDouble;
                     }
                     break;
                 case "==":
@@ -1081,7 +1644,7 @@ namespace Proyecto2.Analizador
                     break;
                 case "!=":
                     retorno.tipo = "booleano";
-                    retorno.valorBoleano = v1.valorString == v2.valorString;
+                    retorno.valorBoleano = v1.valorString != v2.valorString;
                     break;
                 default:
                     errores.Add(new Error(v1.fila, v1.columna, "Semantico", "No hay operacion" + op + " entre un tipo " + v1.tipo + " con un tipo " + v2.tipo));
@@ -1316,7 +1879,28 @@ namespace Proyecto2.Analizador
                     break;
                 case 3:
                     nombre = nodo.ChildNodes[0].Token.Text;
-                    tipo = (Verificacion(nodo.ChildNodes[2].ChildNodes[0], ref temp));
+                    if ((nodo.ChildNodes[1].Token != null))
+                    {
+
+                        tipo = buscarVariableRef(nodo.ChildNodes[0].Token.Text, ref temp, false); //(Verificacion(nodo.ChildNodes[0], ref temp));//igual a algo
+                        if (tipo.esObjeto)
+                        {
+                            // si es asignacion del tipo objeto.variable = algo
+                            entornoVariable = tipo.entorno;//para buscar en el entorno del objeto
+                            objeto = (Verificacion(nodo.ChildNodes[2].ChildNodes[0], ref entornoVariable));//el tipo que se quiere asignar
+                            nombre = nodo.ChildNodes[1].Token.Text;
+                            esOtraClase = true;
+                        }
+                        else
+                        {
+                            continuar = false;
+                            errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "La variable " + objeto.nombre + " no es un objeto"));
+                        }
+                    }else
+                    {
+                        tipo = (Verificacion(nodo.ChildNodes[2].ChildNodes[0], ref temp));//igual a algo
+                    }
+                   
                     break;
                 case 4:
                     tipo = Verificacion(nodo.ChildNodes[0].ChildNodes[0], ref temp);
@@ -1351,23 +1935,32 @@ namespace Proyecto2.Analizador
             {
                 if (esOtraClase)
                 {
-                    do
+                    Tipo busqueda = buscarVariableRef(nombre, ref entornoVariable, false);
+                    if (busqueda == null)
                     {
-                        if (entornoVariable.HT.ContainsKey("var_" + nombre))
-                        {
-                            tipoVar = ((Tipo)temp.HT["var_" + nombre]).tipo;
-                            break;
-                        }
-                        entornoVariable = entornoVariable.siguiente;
+                        errores.Add(new Error(tipo.fila, tipo.columna, "Semantico", ".La variable " + nombre + " no existe"));
+                        return;
+                    }
+                    tipoVar = busqueda.tipo;
+                    //do
+                    //{
+                    //    if (entornoVariable.HT.ContainsKey("var_" + nombre))
+                    //    {
+                    //        tipoVar = ((Tipo)temp.HT["var_" + nombre]).tipo;
+                    //        break;
+                    //    }
+                    //    entornoVariable = entornoVariable.siguiente;
 
-                    } while (entornoVariable!= null);
+                    //} while (entornoVariable!= null);
 
-                    if (objeto.tipo.Equals(tipoVar, StringComparison.InvariantCultureIgnoreCase))
+                    //if (objeto.tipo.Equals(tipoVar, StringComparison.InvariantCultureIgnoreCase))
+                    Validacion valido = compatibles(tipoVar, objeto.tipo);
+                    if (valido.valido)
                     {
                         objeto.nombre = nombre;
                         entornoVariable.HT["var_" + nombre] = objeto;
-                        tipo.entorno = entornoVariable;
-                        temp.HT["var_" + nombre] = tipo;
+                        //tipo.entorno = entornoVariable;
+                        //temp.HT["var_" + nombre] = valido.tipo;
                     }
                    
                     else
@@ -1377,21 +1970,50 @@ namespace Proyecto2.Analizador
                 }
                 else
                 {
-                    do
+
+                    Tipo busqueda = buscarVariableRef(nombre, ref temp, false);
+                    if (busqueda == null)
                     {
-                        if (temp.HT.ContainsKey("var_" + nombre))
-                        {
-                            tipoVar = ((Tipo)temp.HT["var_" + nombre]).tipo;
-                            break;
-                        }
-                        temp = temp.siguiente;
+                        errores.Add(new Error(tipo.fila, tipo.columna, "Semantico", ".La variable " + nombre + " no existe"));
+                        return;
+                    }
+                    tipoVar = busqueda.tipo;
+                    //int veces = 0;
+                    //if (temp.HT.ContainsKey("var_" + nombre))
+                    //{
+                    //    tipoVar = ((Tipo)temp.HT["var_" + nombre]).tipo;
+                    //}else
+                    //{
+                    //    while (temp.siguiente != null)
+                    //    {
+                    //        if (temp.HT.ContainsKey("var_" + nombre))
+                    //        {
+                    //            tipoVar = ((Tipo)temp.HT["var_" + nombre]).tipo;
+                    //            break;
+                    //        }
+                    //        if (temp.siguiente != null)
+                    //        {
+                    //            temp.siguiente.anterior = temp;
+                    //        }
 
-                    } while (temp != null);
+                    //        temp = temp.siguiente;
+                    //        veces++;
+                    //    }
+                    //}
 
-                    if (tipo.tipo.Equals(tipoVar, StringComparison.InvariantCultureIgnoreCase))
+                    Validacion valido = compatibles(tipo.tipo, tipoVar);
+                    //if (tipo.tipo.Equals(tipoVar, StringComparison.InvariantCultureIgnoreCase))
+                    if(valido.valido)
                     {
                         tipo.nombre = nombre;
-                        temp.HT["var_" + nombre] = tipo;
+                        temp.HT["var_" + nombre] = tipo ;
+
+                        //for (int i = 0; i < veces; i++)
+                        //{
+                        //    temp = temp.anterior;
+                        //    temp.siguiente.anterior = null;
+                        //}
+                        
                     }
                     else
                     {
@@ -1402,8 +2024,41 @@ namespace Proyecto2.Analizador
             }
            
         }
-        
-        private Tipo ejecutarLlamada(ParseTreeNode nodo, bool retorna, ref Entorno temp)
+
+        public Tipo buscarVariableRef(String id, ref Entorno entorno, bool esparametro)
+        {
+            id = id.ToLower();
+            if (entorno != null)
+            {
+                if (entorno.HT.ContainsKey("var_" + id))
+                {
+                    return (Tipo)entorno.HT["var_" + id];
+                }
+            }
+            else
+            {
+                errores.Add(new Error(-100, -100, "Semantico", "No se ha enviado entorno"));
+                return null;
+            }
+
+            if (!esparametro)
+            {
+                if (entorno.siguiente != null)
+                {
+                    return buscarVariable(id, entorno.siguiente, esparametro); //busca en el entorno siguiente
+                }
+
+                if (entorno.implementos != null)
+                {
+                    return buscarVariable(id, entorno.implementos, esparametro);//busca en sus extends
+
+                }
+            }
+
+            return null;
+        }
+
+        private Tipo ejecutarLlamada(ParseTreeNode nodo, bool retorna, ref Entorno entt)
         {
             // ejecutar llama de un objeto, como objeto.llamarmetodo();
             Tipo objeto = new Tipo();
@@ -1411,10 +2066,10 @@ namespace Proyecto2.Analizador
             Tipo retorno = new Tipo();
             //Entorno temp = actual;
 
-            objeto = buscarVariable(nodo.ChildNodes[0].Token.Text, temp, false);
+            objeto = buscarVariable(nodo.ChildNodes[0].Token.Text, entt, false);
             if(objeto == null)
             {
-                errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "La variable " + objeto.nombre + " no existe"));
+                errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "La variable " + nodo.ChildNodes[0].Token.Text + " no existe"));
                 return retorno;
             }
 
@@ -1428,7 +2083,14 @@ namespace Proyecto2.Analizador
                     errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "La variable " + objeto.nombre + " no es un objeto"));
                     return retorno;
                 }
-                temp = metodo.entorno;
+                if(metodo.visibilidad.Equals("privado", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    errores.Add(new Error(nodo.ChildNodes[1].Token.Location.Line, nodo.ChildNodes[1].Token.Location.Column, "Semantico", "El metodo "+metodo.nombre + " de " + objeto.nombre + " es privado"));
+                    return retorno;
+                }
+                metodo = new Tipo(metodo);
+                metodo.limpiarTabla();
+                Entorno temp = metodo.entorno;
                 // es el entorno del metodo, cuyo siguiente = objeto.entorno i guess?
                 if(retorna && !temp.retorna || !retorna && temp.retorna)
                 {
@@ -1444,6 +2106,11 @@ namespace Proyecto2.Analizador
                         }else
                         {
                             Entorno delmetodo = metodo.entorno;
+                            delmetodo.metodoPrincipal.Retorno = null;
+                            if (metodo.visibilidad.Equals("privado", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                errores.Add(new Error(nodo.ChildNodes[1].Token.Location.Line, nodo.ChildNodes[1].Token.Location.Column, "Semantico", "El metodo " + metodo.nombre + " no recibe parametros"));
+                            }
                             ejecutar(metodo.cuerpo, ref delmetodo);// ejecuta en el entorno del metodo, no en la clase del metodo
                             // aca no deberia volver a buscar, porque esta en el entorno del metodo, y cambia sus valores y la de la clase del metodo
                             metodo.entorno = delmetodo; // asi cambia con los valores que cambiaron al ejecutar
@@ -1456,31 +2123,33 @@ namespace Proyecto2.Analizador
                     case 3://llamada con parametros
                         List<Tipo> parametros = new List<Tipo>() ;
                         bool correco = true;
-                        parametros = obtenerParametros(nodo.ChildNodes[2], parametros, ref temp);
-                        if(parametros.Count == metodo.parametros.Count)
+                        Validacion valido = new Validacion();
+                        if (verificarParametros(nodo.ChildNodes[2],ref  metodo,ref  entt))
                         {
-                            for (int i = 0; i < parametros.Count; i++)
-                            {
-                                if (((Tipo)temp.HT["var_" + metodo.parametros[i]]).tipo.Equals(parametros[i].tipo))
-                                {
-                                    parametros[i].nombre = ((Tipo)temp.HT["var_" + metodo.parametros[i]]).nombre;
-                                    temp.HT["var_" + metodo.parametros[i]] = parametros[i];
-                                }else
-                                {
-                                    errores.Add(new Error(nodo.ChildNodes[1].Token.Location.Line, nodo.ChildNodes[1].Token.Location.Column, "Semantico", "El metodo " + metodo.nombre + " no recibe estos parametros"));
-                                    correco = false;
-                                    break;
-                                }
-                            }
+                            //for (int i = 0; i < parametros.Count; i++)
+                            //{
+                            //    valido = compatibles(((Tipo)temp.HT["var_" + metodo.parametros[i]]).tipo, parametros[i].tipo);
+                            //    //if (((Tipo)temp.HT["var_" + metodo.parametros[i]]).tipo.Equals(parametros[i].tipo))
+                            //    if(valido.valido)
+                            //    {
+                            //        parametros[i].nombre = ((Tipo)temp.HT["var_" + metodo.parametros[i]]).nombre;
+                            //        temp.HT["var_" + metodo.parametros[i]] = parametros[i];
+                            //    }else
+                            //    {
+                            //        errores.Add(new Error(nodo.ChildNodes[1].Token.Location.Line, nodo.ChildNodes[1].Token.Location.Column, "Semantico", "El metodo " + metodo.nombre + " no recibe estos parametros"));
+                            //        correco = false;
+                            //        break;
+                            //    }
+                            //}
                             if (correco)
                             {
                                 Entorno delmetodo = metodo.entorno;
+                                delmetodo.metodoPrincipal.Retorno = null;
                                 ejecutar(metodo.cuerpo, ref delmetodo);
-                                //metodo = buscarMetodo(nodo.ChildNodes[1].Token.Text, objeto.entorno);
                                 metodo.entorno = delmetodo;
                                 if (metodo.entorno.retorna)
                                 {
-                                    retorno = metodo.entorno.Retorno;
+                                    retorno = metodo.entorno.metodoPrincipal.Retorno;
                                 }
                             }
                         }
@@ -1529,6 +2198,10 @@ namespace Proyecto2.Analizador
                 {
                     return (Tipo)entorno.HT["var_" + id];
                 }
+            }else
+            {
+                errores.Add(new Error(-100, -100, "Semantico", "No se ha enviado entorno"));
+                return null;
             }
 
             if (!esparametro)
@@ -1588,6 +2261,7 @@ namespace Proyecto2.Analizador
             {
                 Entorno entif = new Entorno();
                 entif.siguiente = entorno;
+                entif.metodoPrincipal = entorno.metodoPrincipal;
                 //actual = entif;
                 for (int i = 0; i < cuenta.valorEntero; i++)
                 {
@@ -1609,6 +2283,7 @@ namespace Proyecto2.Analizador
                     Entorno entif = new Entorno();
                     entif.siguiente = actual;
                     //actual = entif;
+                    entif.metodoPrincipal = actual.metodoPrincipal;
                     ejecutar(nodo.ChildNodes[1], ref entif);
                 } else if (nodo.ChildNodes.Count == 3)
                 {
@@ -1620,6 +2295,7 @@ namespace Proyecto2.Analizador
                         case "SINO":
                             Entorno entif = new Entorno();
                             entif.siguiente = actual;
+                            entif.metodoPrincipal = actual.metodoPrincipal;
                             //actual = entif;
                             ejecutar(nodo.ChildNodes[2].ChildNodes[0], ref entif);
                             break;
@@ -1630,6 +2306,7 @@ namespace Proyecto2.Analizador
                     {
                         Entorno entif = new Entorno();
                         entif.siguiente = actual;
+                        entif.metodoPrincipal = actual.metodoPrincipal;
                         //actual = entif;
                         ejecutar(nodo.ChildNodes[3].ChildNodes[0], ref entif);
                     }
@@ -1656,6 +2333,7 @@ namespace Proyecto2.Analizador
                             {
                                 Entorno entif = new Entorno();
                                 entif.siguiente = actual;
+                                entif.metodoPrincipal = actual.metodoPrincipal;
                                 //actual = entif;
                                 ejecutar(nodo.ChildNodes[2], ref entif);
                                 return true;
@@ -1674,6 +2352,7 @@ namespace Proyecto2.Analizador
                         {
                             Entorno entif = new Entorno();
                             entif.siguiente = actual;
+                            entif.metodoPrincipal = actual.metodoPrincipal;
                             //actual = entif;
                             ejecutar(nodo.ChildNodes[1], ref entif);
                             return true;
@@ -1732,10 +2411,18 @@ namespace Proyecto2.Analizador
 
         public void Retornar(ParseTreeNode nodo, ref Entorno actual)
         {
-            if (actual.retorna)
+            //int entro = 0;
+            Tipo retorno = Verificacion(nodo.ChildNodes[0], ref actual); 
+            
+            if (actual.metodoPrincipal.retorna)
             {
-                actual.Retorno = Verificacion(nodo.ChildNodes[0], ref actual);
+                actual.metodoPrincipal.Retorno = retorno;
+            }else
+            {
+                errores.Add(new Error(retorno.fila, retorno.columna, "Semantico", "El metodo " + actual.metodoPrincipal.nombre + " no debe retornar"));
             }
+
+
         }
 
         private void mientras(ParseTreeNode nodo, ref Entorno actual)
@@ -1746,8 +2433,9 @@ namespace Proyecto2.Analizador
                 Entorno entif = new Entorno();
                 entif.siguiente = actual;
                 entif.esCiclo = true;
+                entif.metodoPrincipal = actual.metodoPrincipal;
                 //actual = entif;
-                while (Verificacion(nodo.ChildNodes[0], ref actual).valorBoleano)
+                while (Verificacion(nodo.ChildNodes[0], ref actual).valorBoleano && !actual.salir)
                 {
                     ejecutar(nodo.ChildNodes[1], ref entif);
                 }
@@ -1766,9 +2454,10 @@ namespace Proyecto2.Analizador
                 Entorno entif = new Entorno();
                 entif.siguiente = actual;
                 entif.esCiclo = true;
+                entif.metodoPrincipal = actual.metodoPrincipal;
                 //actual = entif;
                 ejecutar(nodo.ChildNodes[0], ref entif);
-                while (Verificacion(nodo.ChildNodes[1], ref actual).valorBoleano)
+                while (Verificacion(nodo.ChildNodes[1], ref actual).valorBoleano && !actual.salir)
                 {
                     ejecutar(nodo.ChildNodes[0], ref entif);
                 }
@@ -1827,7 +2516,7 @@ namespace Proyecto2.Analizador
 
                 } while (temp != null);
 
-                errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "No existe la variable " + name));               
+                errores.Add(new Error(temporal.fila, temporal.columna, "Semantico", "2. No existe la variable " + temporal.nombre));               
             }
             else
             {
@@ -1860,54 +2549,88 @@ namespace Proyecto2.Analizador
 
         private Tipo ejecutarMetodoLocal(ParseTreeNode nodo, bool devuelve, ref Entorno ent)
         {
+
             Tipo temp = new Tipo();
-            while(ent.siguiente!= null)
+            Entorno aux = ent;
+            while(aux.siguiente!= null)
             {
-                ent = ent.siguiente;//buscar la clase padre
+                aux = aux.siguiente;//buscar la clase padre
             }
-            temp = buscarMetodo(nodo.ChildNodes[0].Token.Text, ent);
+            temp = buscarMetodo(nodo.ChildNodes[0].Token.Text, aux);// busca el metodo
             if(temp == null)
             {
                 errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "No se encuentra el método "+ nodo.ChildNodes[0].Token.Text));
             }else
             {
-                if (nodo.ChildNodes.Count == 2)
+                Tipo nmetodo = new Tipo(temp);//aca deberia crear otro entorno solo con los parametros
+                nmetodo.limpiarTabla();
+                //temp.entorno.metodoPrincipal = new Entorno(temp.entorno.metodoPrincipal);
+                if (nodo.ChildNodes.Count == 2)//llamada con parametros
                 {
-                    if (temp.parametros.Count == 0)
+                    if (nmetodo.parametros.Count == 0)
                     {
                         errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "No se encuentra el método " + nodo.ChildNodes[0].Token.Text + " con el numero de parametros especificados "));
                     }else
                     {
-                        if (!verificarParametros(nodo.ChildNodes[1], ref temp, ref ent))
+                        if (!verificarParametros(nodo.ChildNodes[1], ref nmetodo, ref ent))
                         {
                             errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "No se encuentra el método " + nodo.ChildNodes[0].Token.Text + " con los parametros especificos "));
-                            temp.tipo = "Error";
-                            return temp;
+                            nmetodo.tipo = "Error";
+                            return nmetodo;
                         }
                     }
                 }
                 else
                 {
-                    if(temp.parametros.Count > 0)
+                    if(nmetodo.parametros.Count > 0)
                     {
                         errores.Add(new Error(nodo.ChildNodes[0].Token.Location.Line, nodo.ChildNodes[0].Token.Location.Column, "Semantico", "No se encuentra el método " + nodo.ChildNodes[0].Token.Text+ " sin parametros "));
                     }
                 }
                 //actual = temp.entorno;
-                Entorno delmetodo = temp.entorno;
-                ejecutar(temp.cuerpo, ref delmetodo);
-                temp.entorno = delmetodo;
+                Entorno delmetodo = nmetodo.entorno;
+                delmetodo.metodoPrincipal.Retorno = null;
+                ejecutar(nmetodo.cuerpo, ref delmetodo);
+                nmetodo.entorno = delmetodo;
                 
                 
-                if (temp.entorno.retorna && temp.entorno.Retorno!=null)
+                if (nmetodo.entorno.metodoPrincipal.retorna && nmetodo.entorno.metodoPrincipal.Retorno!=null)
                 {
-                    temp = temp.entorno.Retorno;
+                    temp = nmetodo.entorno.metodoPrincipal.Retorno;
                 }
                 //actual = guardaractual;
             }
 
             return temp;
         }
+
+        private Validacion compatibles(String t1, String t2)
+        {
+            Validacion valido = new Validacion();
+            if (t1.Equals(t2, StringComparison.InvariantCultureIgnoreCase))
+            {
+                valido.valido = true;
+                valido.tipo = t1;
+            }
+            else if (t1.Equals("decimal", StringComparison.InvariantCultureIgnoreCase) && t2.Equals("entero", StringComparison.InvariantCultureIgnoreCase))
+            {
+                valido.valido = true;
+                valido.tipo = t1;
+            }
+            else if ((t1.Equals("entero", StringComparison.InvariantCultureIgnoreCase)|| t1.Equals("decimal", StringComparison.InvariantCultureIgnoreCase)) && t2.Equals("char", StringComparison.InvariantCultureIgnoreCase))
+            {
+                valido.valido = true;
+                valido.tipo = t1;
+            }else
+            {
+                valido.valido = false;
+                valido.tipo = "Error";
+                valido.mensaje = "No se puede asignar un " + t2 + " a un  " + t1;
+            }
+            return valido;
+
+        }
+        
 
         private bool verificarParametros(ParseTreeNode nodo, ref Tipo metodo, ref Entorno ent)
         {
@@ -1920,9 +2643,11 @@ namespace Proyecto2.Analizador
                     comp = buscarVariable(metodo.parametros.ElementAt(i), metodo.entorno, true);
                     if (comp.tipo == parametros[i].tipo)
                     {
-                        parametros[i].nombre = metodo.parametros[i];
-                        metodo.entorno.HT["var_" + metodo.parametros[i].ToLower()] = parametros[i];
-                    }else
+                        //parametros[i].nombre = metodo.parametros[i];
+                        metodo.entorno.HT["var_" + metodo.parametros[i].ToLower()] = new Tipo(parametros[i]);
+                        ((Tipo)metodo.entorno.HT["var_" + metodo.parametros[i].ToLower()]).nombre = metodo.parametros[i];
+                    }
+                    else
                     {
                         errores.Add(new Error(parametros[i].fila, parametros[i].columna, "Semantico", "No puede asignar un tipo " + parametros[i].tipo + " a un tipo " + comp.tipo));
                         return false;
@@ -1950,9 +2675,64 @@ namespace Proyecto2.Analizador
             }
         }
 
-        private void crearObjeto(ParseTreeNode nodo)
+        private Tipo crearObjeto(ParseTreeNode nodo, ref Entorno entorno)
         {
-            throw new NotImplementedException();
+            Tipo retorno = new Tipo();
+            switch (nodo.ToString())
+            {
+                case "OBJETO":
+                    retorno  = crearObjeto(nodo.ChildNodes[0], ref entorno);
+                    retorno.esArray = true;
+                    break;
+                case "LISTAOBJETOS":
+                    switch (nodo.ChildNodes.Count)
+                    {
+                        case 2:
+                            retorno = crearObjeto(nodo.ChildNodes[0], ref entorno);
+                            Tipo segundo = Verificacion(nodo.ChildNodes[1], ref entorno);
+                            if (retorno.arreglo.Count > 0)//significa que es un arreglo
+                            {
+                                if (retorno.esArray)//si salio de un nodo OBJETO
+                                {   
+                                    if (segundo.tipo.Equals(retorno.tipo, StringComparison.InvariantCultureIgnoreCase)){
+                                        Tipo arreglo = new Tipo();
+                                        arreglo.tipo = retorno.tipo;
+                                        arreglo.esArray = true;
+                                        arreglo.arreglo.Add(retorno);
+                                        arreglo.arreglo.Add(new Tipo(segundo));
+                                        return arreglo;
+                                    }
+                                    
+                                }else
+                                {
+                                    retorno.arreglo.Add(new Tipo(segundo));
+                                }
+                            }else
+                            {
+
+                                if (retorno.tipo.Equals(segundo.tipo))
+                                {
+                                    Tipo arreglo = new Tipo();
+                                    arreglo.tipo = retorno.tipo;
+                                    //arreglo.esArray = true;
+                                    arreglo.arreglo.Add(retorno);
+                                    arreglo.arreglo.Add(new Tipo(segundo));
+                                    return arreglo;
+                                }else
+                                {
+                                    errores.Add(new Error(retorno.fila, retorno.columna, "Semantico", "No puede agregar un arreglo un tipo " + retorno.tipo + " junto a un tipo " + segundo.tipo));
+                                }
+                               
+                            }
+                            break;
+                        case 1:
+                            retorno = Verificacion(nodo.ChildNodes[0], ref entorno);
+                            Console.WriteLine(retorno.nombre);
+                            return new Tipo(retorno);
+                    }
+                    break;
+            }
+            return retorno;
         }
 
         private void ejecutarFor(ParseTreeNode nodo, ref Entorno entorno)
@@ -1962,6 +2742,11 @@ namespace Proyecto2.Analizador
             {
                 case 3:
                     nombre = nodo.ChildNodes[0].ChildNodes[0].ChildNodes[1].ChildNodes[0].Token.Text;
+                    if (entorno.HT.ContainsKey("var_" + nombre))
+                    {
+                        entorno.HT.Remove("var_" + nombre);
+                        //((Tipo)entorno.HT["var_" + nombre]).nombre = "";
+                    }
                     break;
                 case 2:
                     nombre = nodo.ChildNodes[0].ChildNodes[0].ChildNodes[0].Token.Text;
@@ -1974,21 +2759,25 @@ namespace Proyecto2.Analizador
             {
                 if (inicial.tipo.Equals("entero"))
                 {
-                    Entorno nuevo = new Entorno();
-                    nuevo.siguiente = entorno;
-                    nuevo.esCiclo = true;
-                    nuevo.HT.Add("var_" + nombre.ToLower(), inicial);
+                    Entorno entFor = new Entorno();
+                    entFor.siguiente = entorno;
+                    entFor.metodoPrincipal = actual.metodoPrincipal;
+                    entFor.nombre = "cicloFor";
+                    entFor.esCiclo = true;
+                    entFor.HT.Add("var_" + nombre.ToLower(), inicial);
                     inicial = Verificacion(nodo.ChildNodes[1], ref entorno);//verifica el valor booleano del segundo argumento
                     if (inicial.tipo.Equals("booleano"))
                     {
                         //actual = nuevo;
+                        //Entorno aux = entFor;
                         ParseTreeNode temp = new ParseTreeNode(null, new SourceSpan());
                         temp.ChildNodes.Add(nodo.ChildNodes[2]);
+
                         while (inicial.valorBoleano)
                         {
-                            ejecutar(nodo.ChildNodes[3], ref entorno);
-                            ejecutar(temp, ref entorno);
-                            inicial = Verificacion(nodo.ChildNodes[1], ref nuevo);
+                            ejecutar(nodo.ChildNodes[3], ref entFor);
+                            ejecutar(temp, ref entFor);
+                            inicial = Verificacion(nodo.ChildNodes[1], ref entFor);
                         }
                         //actual = nuevo.siguiente;
                     }else
@@ -2026,20 +2815,23 @@ namespace Proyecto2.Analizador
         public void imprimirTodo()
         {
             Tipo actual = null;
+            //variables.Select(consola.TextLength, 0);
+            //variables.SelectionColor = Color.AliceBlue;
+            
             foreach (Entorno en in listaEntornos.Values)
             {
-                Console.WriteLine("El entorno " + en.nombre + " Tiene " + en.HT.Count + " Elementos en su nombre");
+                variables.AppendText("El entorno " + en.nombre + " Tiene " + en.HT.Count + " Elementos en su nombre \n");
                 foreach (String k in en.HT.Keys)
                 {
                     if (k.Substring(0, 4) == "var_")
                     {
                         actual = (Tipo)en.HT[k];
-                        Console.WriteLine("key: " + k + " type: " + actual.tipo);
+                        variables.AppendText("key: " + k + " type: " + actual.tipo + " Valor: " + actual.valorString +  "\n");
                     }
                     else
                     {
                         actual = (Tipo)en.HT[k];
-                        Console.WriteLine("key: " + k + " type: " + actual.tipo + ".  metodo");
+                        variables.AppendText("key: " + k + " type: " + actual.tipo + ".  metodo \n");
                     }
                 }
             }
