@@ -1,0 +1,62 @@
+Clase Fractal{
+	
+	<- Aquí empieza la ejecución ->
+
+	main(){
+		mandelbrot(30);
+        Figure ("Fractal"); >> Genero la imagen con lo que esté en el buffer
+
+	}
+
+
+	public mandelbrot void (int iteraciones) {
+        
+        int anchoImagen = 800;
+        int altoImagen = 650;
+        int maximoDeIteraciones = iteraciones;
+        
+        for (int fila = 0; fila < altoImagen; fila++) {
+            for (int columna = 0; columna < anchoImagen; columna++) {
+
+                >>c = a + bi; donde a es un número real y b es un número imaginario
+                >>Asigno los valores de C, que es mi número complejo
+                double a = (columna - (anchoImagen / 2)) * 3.0 / anchoImagen;
+                double b = (fila - (altoImagen / 2)) * 3.0 / altoImagen;
+                >>Asigno los valores iniciales de X y Y que son 0 porque z0= 0
+                double x = 0;
+                double y = 0;
+                double parteReal = 0;
+                double parteImaginiaria = 0;
+                int numIteraciones = 0;
+
+                >>Sacó el módulo para ver si el punto converge o no, tiene que ser menor de 4, digo que es 4 porque no saco la raiz sino elevo z al cuadrado(z^2)
+                while (parteReal * parteReal + parteImaginiaria * parteImaginiaria < 4 && numIteraciones < maximoDeIteraciones) {
+                    parteReal = (x * x) - (y * y) + a;
+                    parteImaginiaria = (2 * x * y) + (b);
+                    x = parteReal;
+                    y = parteImaginiaria;
+                    numIteraciones++;
+                }
+                >>Si no salió porque llegó al maximo de iteraciones es porque el módulo es mayor que 2
+                if (numIteraciones < maximoDeIteraciones) {
+                    >> g.SetPixel(columna, fila, Color.White)
+                    String color = "#FFFFFF";
+                    
+                     addFigure( circle(color, 1, true, columna + 20, fila + 40)); 
+
+
+                } else {
+                    >>g.SetPixel(columna, fila, Color.Black)
+                    >>g.setColor(Color.black);
+>>                    g.setColor(Color.decode("#C95959"));
+>>                    String nombrecolor = "#" + columna +75;
+                    String nombrecolor = "#" + (columna + fila * 2);
+                    addFigure( circle(nombrecolor, 1, true, columna + 20, fila + 40)); 
+                }
+                
+            }
+        }
+    }
+
+
+}

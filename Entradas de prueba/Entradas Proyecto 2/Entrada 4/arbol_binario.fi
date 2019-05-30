@@ -1,0 +1,149 @@
+Clase ArbolBinario{
+	
+	<- Aquí empieza la ejecución ->
+	
+	main(){
+		Arbol arbol = new Arbol(); >>Creo un nuevo árbol
+        arbol.constructor(100); >>Llamo al constructor de la clase Arbol y defino la raiz el árbol
+
+        arbol.agregarNodo(70);
+        arbol.agregarNodo(130);
+        arbol.agregarNodo(40);
+        arbol.agregarNodo(115);
+        arbol.agregarNodo(200);
+        arbol.agregarNodo(93);
+        arbol.agregarNodo(150);
+        arbol.agregarNodo(201);
+        arbol.agregarNodo(10);
+        arbol.agregarNodo(5);
+        arbol.agregarNodo(71);
+        arbol.agregarNodo(73);
+        arbol.agregarNodo(74);
+        arbol.agregarNodo(99);
+
+        >>Imprimir el recorrido preOrden
+        Print("<--------------------- Recorrido PreOrden --------------------->");
+        arbol.imprimir_preOrden();
+
+        >>Imprimir el recorrido enOrden
+        Print("<--------------------- Recorrido EnOrden --------------------->");
+        arbol.imprimir_enOrden();
+
+        >>Imprimir el recorrido PostOrden
+        Print("<--------------------- Recorrido PostOrden --------------------->");
+        arbol.imprimir_postOrden();
+	}
+
+
+
+}
+
+Clase Nodo{
+	int valor;
+    Nodo hijoizquierdo;
+    Nodo hijoderecho;
+    bool izquierdoesnulo; >>Para saber si el hijo izquierdo es nulo o no
+    bool derechoesnulo; >>Para saber si el hijo derecho es nulo o no
+
+
+    <- Este método va a funcionar como el constructor de la clase ->
+    publico constructor void (int par_valor) {
+        valor = par_valor;
+        izquierdoesnulo = true; >>Hijo izquierdo es nulo
+        derechoesnulo = true; >>Hijo derecho es nulo
+    }
+
+    <- Métodos para imprimir los recorridos del árbol ->
+    publico imprimir_enOrden void () {
+        if (izquierdoesnulo != true) { >>Si el hijo izquierdo NO es nulo
+            hijoizquierdo.imprimir_enOrden();
+        }
+
+        Print(valor);
+
+        if (derechoesnulo != true) { >>Si el hijo derecho NO es nulo
+            hijoderecho.imprimir_enOrden();
+        }
+    }
+
+    publico imprimir_preOrden void () {
+        Print(valor);
+
+        if (izquierdoesnulo != true) { >>Si el hijo izquierdo NO es nulo
+            hijoizquierdo.imprimir_preOrden();
+        }
+
+        if (derechoesnulo != true) { >>Si el hijo derecho NO es nulo
+            hijoderecho.imprimir_preOrden();
+        }
+    }
+
+    publico imprimir_postOrden void () {
+        if (izquierdoesnulo != true) { >>Si el hijo izquierdo NO es nulo
+            hijoizquierdo.imprimir_postOrden();
+        }
+
+        if (derechoesnulo != true) { >>Si el hijo derecho NO es nulo
+            hijoderecho.imprimir_postOrden();
+        }
+
+        Print(valor);
+    }
+
+
+}
+
+Clase Arbol{
+	>>Nodo raiz = new Nodo()
+    Nodo raiz; >>Raiz del árbol
+
+    <- Este método va a funcionar como el constructor de la clase.->
+    publico constructor void(int par_valor) {
+        raiz = new Nodo();
+        raiz.constructor(par_valor); >>Llamo al constructor de la clase Nodo
+    }
+
+    <- Método que inserta un valor en el árbol de forma recursiva ->
+    publico insertar void(Nodo nuevonodo, Nodo raiz) {
+        >>Si el valor del nuevo nodo es menor o igual que el de la raiz
+        if (nuevonodo.valor <= raiz.valor) {
+            >>Verifico si el hijo izquierdo de la raiz es nulo
+            if (raiz.izquierdoesnulo == true) {
+                >>Si el hijo izquierdo es nulo
+                raiz.hijoizquierdo = nuevonodo;
+                raiz.izquierdoesnulo = false; >>Indico que el hijo izquierdo ya no es nulo
+            } else {
+                >>Si el hijo izquiero no es nulo bajo en la rama izquierda del sub árbol
+                insertar(nuevonodo, raiz.hijoizquierdo);
+            }
+        } else { >>Si el valor del nuevo nodo es mayor que el de la raiz
+            >>Verifico si el hijo derecho de la raiz es nulo
+            if (raiz.derechoesnulo == true) {
+                >>Si el hijo derecho es nulo
+                raiz.hijoderecho = nuevonodo;
+                raiz.derechoesnulo = false; >>Indico que el hijo derecho ya no es nulo
+            } else {
+                >>Si el hijo derecho no es nulo bajo en la rama derecha del sub árbol
+                insertar(nuevonodo, raiz.hijoderecho);
+            }
+        }
+    }
+
+    <- Método que llamo la primera vez cuando quiero insertar un nuevo nodo en el árbol ->
+    publico agregarNodo void (int valor) {
+        Nodo nuevonodo = new Nodo();
+        nuevonodo.constructor(valor);
+        insertar(nuevonodo, raiz);
+    }
+
+    <- Métodos para imprimir los recorridos del árbol ->
+    publico imprimir_enOrden void () {
+        raiz.imprimir_enOrden();
+    }
+    publico imprimir_preOrden void () {
+        raiz.imprimir_preOrden();
+    }
+    publico imprimir_postOrden void () {
+        raiz.imprimir_postOrden();
+    }
+}

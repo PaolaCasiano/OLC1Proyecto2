@@ -1,0 +1,58 @@
+Clase principal{
+	
+	double xp1 = 400;
+	double yp1 = 300;
+	double xp2 = 110;
+	double yp2 = 300;
+	double sin60 = 0.8657598394923444;
+	int nivel_de_recursividad = 6; >> Probar el nivel de recursividad
+	int contador = 13458524;
+
+	<- Aquí va a empezar toda la ejecución ->
+	main(){
+		pintar_Triangulo(nivel_de_recursividad, xp1, yp1, xp2, yp2); >> método que agrega figuras al buffer
+		Figure ("Triángulo de Sierpinski"); >> Genero la imagen con lo que esté en el buffer
+	}
+
+
+
+	<- Función que grafíca el triángulo ->
+	publico pintar_Triangulo void (int i, double xp12, double yp12, double xp22, double yp22){
+		double dx = (xp22 - xp12) / 2;
+        double dy = (yp22 - yp12) / 2;
+        double xp32 = xp12 + dx - 2 * dy * sin60;
+        double yp32 = yp12 + dy + 2 * dx * sin60;
+
+        double dx1 = (xp22 + xp12) / 2;
+        double dy1 = (yp22 + yp12) / 2;
+        double dx2 = (xp32 + xp22) / 2;
+        double dy2 = (yp32 + yp22) / 2;
+        double dx3 = (xp12 + xp32) / 2;
+        double dy3 = (yp12 + yp32) / 2;
+
+        if (i <= 0) {
+        	String color = "#" + contador; >> Este color si les tiene que funcionar
+            contador = contador + 40;
+            
+            >> Si no les funciona con la figura de triángulo prueben descomentando la parte
+            >> de abajo que es usando líneas
+
+            addFigure( triangle(color, false, xp12, yp12, xp22, yp22, xp32, yp32));
+
+            <- 
+            	Aquí prueben un grosor que haga que la imagen se vea bien
+
+            	addFigure( Line(color, xp12, yp12,xp22, yp22, 2); 
+            	addFigure( Line(color, xp22, yp22,xp32, yp32, 2); 
+				addFigure( Line(color, xp32, yp32,xp12, yp12, 2); 
+            ->
+        } else {
+            pintar_Triangulo(i - 1, xp12, yp12, dx1, dy1);
+            pintar_Triangulo(i - 1, dx1, dy1, xp22, yp22);
+            pintar_Triangulo(i - 1, dx3, dy3, dx2, dy2);
+        }
+	}
+
+
+
+}

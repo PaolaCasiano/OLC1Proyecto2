@@ -1,0 +1,19 @@
+Clase Principal{
+
+	publico string valor = "";
+	
+
+	main(){
+		print("1. Funcion1");
+		print("2. Funcion2");
+		print("3. Funcion3");
+		print("4. Funcion4");
+		print("5. Funcion5");
+		print("6. Funcion6");
+		print("7. Funcion67");
+
+
+		int opcion = 1;
+
+	}
+}

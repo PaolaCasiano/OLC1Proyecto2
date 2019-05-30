@@ -1,0 +1,21 @@
+clase Declaraciones{
+    
+    Objeto1 bandera1;>>//2
+    
+    publico bool bandera2;>>//3
+    
+    char caracter1, dosC, tresC = '1';>>//3
+   
+    String array var1, var2, var3[2];>>//4
+    
+    publico char caracter2, dos3, tres4 = '1';>>//4
+   
+    publico String array var1A, var2A, var3A[2];>>//5
+    
+    int array var1, var2, va3 [2][5]={{1,2,3},{1,1,2}};>>//5
+    
+    publico int array var1 [2][5]={{1,2,3},{1,1,2}};>>//6
+
+
+
+}

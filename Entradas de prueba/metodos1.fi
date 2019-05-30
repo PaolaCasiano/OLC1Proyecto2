@@ -1,0 +1,33 @@
+clase Declaraciones{
+    
+    bool bandera1;>>//2
+}
+
+clase clase2  {
+    >>Declaracion dec1;
+    int entero =2;
+    main(){
+        
+        print("debe imprimir 2: "+entero);
+        entero++;
+        print("debe imprimir 3: "+ entero);
+        print("debe imprimir 3 y aumentar en uno: "+ entero++);
+        print("debe imprimir 4: "+ entero);
+        METODOPRUEBA(1);
+
+    }
+
+    publico arreglo array bool [12][5][4] Override(int numero, string letras){
+        dec1 = new Declaracion();
+    }
+    
+    
+    PUBLICO METODOPRUEBA VOID(int numero){
+    	int i ;
+    	for (i = 0; i<10; i++ ) {
+    		print("variable del for "+i);
+    	}
+        PRINT(ENTERO);
+    }
+  
+}

@@ -1,0 +1,31 @@
+Clase Familia{
+
+
+crear void(){
+
+Persona padre = new Persona();
+Persona madre = new Persona();
+Persona hijo1 = new Persona();
+Persona hijo2 = new Persona();
+Persona hijo3 = new Persona();
+
+padre.crear(45,"Estuardo","Padre");
+madre.crear(42,"Maria","Madre");
+hijo1.crear(23,"Oscar", "Hijo");
+hijo2.crear(19, "Erick","Hijo");
+hijo3.crear(30, "Compi1","Papa");
+
+
+Print(padre.nombre + " " + padre.edad+ " " + padre.rol);
+Print(madre.nombre + " " + madre.edad+ " " + madre.rol);
+Print(hijo1.nombre + " " + hijo1.edad+ " " + hijo1.rol);
+Print(hijo2.nombre + " " + hijo2.edad+ " " + hijo2.rol);
+Print(hijo3.nombre + " " + hijo3.edad+ " " + hijo3.rol);
+
+}
+
+
+
+
+
+}

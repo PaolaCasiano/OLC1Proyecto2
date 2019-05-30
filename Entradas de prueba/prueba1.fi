@@ -1,0 +1,110 @@
+clase Clase1{
+    publico string linea = "";
+    publico int alto, ancho;
+    privado bool bandera;
+    privado double altura, peso;
+    
+    main(){
+        pruebaMetodo();
+        bandera = (1>2||3<4*variable)||!(a>b);
+        altura = 2.2^5;
+        peso = altura +20;
+        publico int array arreglo1[2][3][5] = {{1,1,2,var,2},{1,3,4,facil,true}};
+        clase2.entero = hola;
+
+    }   
+
+
+    getalto int(int alto){
+        alto = alto;
+        ancho ++;
+        ancho = alto++;
+    }
+
+    publico  setAlto void(int alto){
+        alto = alto;
+        ancho ++;
+        ancho = alto++;
+    }
+    
+    publico pruebaMetodo void (int d){
+        int array arr10, arr20, arr30 [2] [1+1+1] = {
+            {5, 10/2, 15*23},
+            {20, var1^2, 30}
+        };
+
+        string algo = arr10[2+1+(-1)];
+        print(algo);
+        print(clase.algo[posicion]);
+        return algo[5];
+
+    }
+}
+
+clase Clase2 importar Clase1{
+    int variable;
+    publico  retornarSUma int(double num1, double num2){
+        RETURN num1 + num2;
+    }
+
+    publico  pruebaMetodo int override( int param1, double param2){
+        int hola= 1;
+        return hola;
+
+        if(opcion1 == 0 && opcion2 !=laverdad){
+        show("ha entrado al if","si");
+
+        }else if(opcion1 == 9){
+        show("entro al else if","hhh");
+        }ELSE IF(opcion2 ==2){
+        for(int i = 2; i<6; i++){
+                variable = "no hay por que";
+            }
+        }else{
+        show("entro al else", var);
+            repeat(5*4+2-8){
+            show("hehe","jeje");
+            }
+
+            while(a>b){
+                print("hola");
+            }
+        }
+
+        comprobar(variable) {
+            caso valor1:
+                variable++;
+                salir;
+            caso valor2:
+                variable++;
+                salir;
+            caso valor3:
+                >> Sentencias caso 3 ;
+                variable++;
+                salir;
+                >>mas casos
+            defecto:
+                print("no hay de que");
+                
+        }
+    }
+
+
+    publico  ahora int(int hola, int que, double hace){
+        double contador, contador2 =30.55;
+        bool f2, f1=true ;
+        string palabra2, palabra3 = "esto es un ejemplo :D "+"v";
+        bool bandera2,bandera3=getFlag();
+        bool flag2, flag3=!false;
+        bool flag4 = flag2 ;
+        char letra = 'A' ;
+        bool estado = verdadero && falso;
+        int contador = 0 * 9- getValor() + 2;
+        double nota = getNota();
+        nota++;
+        int array arr1 [a+b+(a+(5+1)*5)];
+        double c2 = new clase2();
+           CLASE c2 = new Clase2();
+        c2.pruebaMetodo(contador);
+    }
+}

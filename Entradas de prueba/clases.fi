@@ -1,0 +1,50 @@
+clase Prueba1 importar Clase2{
+    publico int array var1 [2][3][4]={
+                                        {
+                                            {1,2,3,4}
+                                            ,{1,1,2,4}
+                                            ,{1,1,2,4}
+                                        },
+                                        {
+                                            {1,2,3,4}
+                                            ,{1,1,2,4}
+                                            ,{1,1,2,4}
+                                        },
+                                        {
+                                            {1,2,3,4}
+                                            ,{1,1,2,4}
+                                            ,{1,1,2,4}
+                                        }
+                                      };>>//6
+    main(){
+            int limite = var1[1][2];
+            print(limite);
+ 
+          >>for(int i = 0; i<limite; i++){
+               print("fib"+funcionFibonacci(4) + ", ");
+          >>}
+    }
+    
+    privado funcionFibonacci int (int num){
+        print("mumero "+num);
+          if(num == 0 || num == 1)
+          {
+            return num;
+          }
+          else
+          {
+            print("a "+funcionFibonacci(num-1));
+            >>print("b "+funcionFibonacci(num-2));
+            return 110;
+          }
+     }
+
+}
+
+clase Clase2{
+    int entero = 2;
+    
+    publico  retornarSUma int(double num1, double num2){
+        RETURN num1 + num2;
+    }
+}

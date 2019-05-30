@@ -1,0 +1,62 @@
+clase FibonacciRecursivo importar variable {
+ 
+     main() {
+            metodos numeritos= new metodos();
+          for(int i = 0; i<limite; i++){
+               print(funcionFibonacci(i) + ", ");
+          }
+          limite = numeritos.hola;
+          
+          print(limite+" es par?");
+          print(numeritos.par(limite));
+          print(limite+" es impar?");
+          print(impar(limite));
+     }
+ 
+     privado funcionFibonacci int (int num){
+          if(num == 0 || num==1){
+               return num;
+          }
+          else{
+               return funcionFibonacci(num-1) + funcionFibonacci(num-2);
+          }
+     }
+     
+     publico impar bool  (int num){
+        if (num == 0) 
+        {return false;}
+        else
+        {return par(num-1);}
+    }
+
+    publico par bool  (int num) {
+        if (num == 0) 
+        {return true;}
+        else
+        {return impar(num-1);}
+    }
+ 
+}
+
+clase variable{
+    int limite = 6;
+
+}
+
+clase metodos{
+     int hola = 12;
+
+    publico impar bool  (int num){
+        if (num == 0) 
+        {return false;}
+        else
+        {return par(num-1);}
+    }
+
+    publico par bool  (int num) {
+        if (num == 0) 
+        {return true;}
+        else
+        {return impar(num-1);}
+    }
+}

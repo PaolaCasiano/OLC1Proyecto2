@@ -1,0 +1,77 @@
+clase Entrada2{
+	
+	
+	<- Aquí empieza toda la ejecución ->
+	main(){
+		FuncionesRecursivas f = new FuncionesRecursivas();
+		f.imprimir_fibonacci(20);
+		f.Hanoi(4, 1, 2, 3);
+		f.ParoImpar(15);
+        f.ParoImpar(20);
+	}
+
+}
+
+
+clase FuncionesRecursivas{
+	
+	<------------- Función de Fibonacci ------------->
+
+    publico imprimir_fibonacci void (int valor) {
+        Print("Resultado de fibonacci(" + valor + ") = " + fibonacci(valor));
+    }
+
+    publico fibonacci int (int n) {
+        if (n == 0) {
+            return 0;
+        }
+
+        if (n == 1) {
+            return 1;
+        }
+
+        return fibonacci(n - 1) + fibonacci(n - 2);
+    }
+
+
+
+
+    <--------------- Función de las Torres de Hanói --------------->
+
+    publico Hanoi void (int discos, int origen, int auxiliar, int destino) {
+        if (discos == 1) {
+            Print("mover disco de " + origen + " a " + destino);
+        } else {
+            Hanoi(discos - 1, origen, destino, auxiliar);
+            Print("mover disco de " + origen + " a " + destino);
+            Hanoi(discos - 1, auxiliar, origen, destino);
+        }
+    }
+
+
+
+
+
+    <-------------------- Función que calcúla si un número es Par o Impar -------------------->
+    publico ParoImpar void (int a) {
+        if (par(a) == 1) { >>El número es Par
+            Print("El número '" + a + "'" + " es Par");
+        } else { >>El número es impar
+            Print("El número '" + a + "'" + " es Impar");
+        }
+    }
+
+    publico par int(int nump) {
+        if (nump == 0) {
+            return 1;
+        }
+        return impar(nump - 1);
+    }
+
+    publico impar int (int numi) {
+        if (numi == 0) {
+            return 0;
+        }
+        return par(numi - 1);
+    }
+}

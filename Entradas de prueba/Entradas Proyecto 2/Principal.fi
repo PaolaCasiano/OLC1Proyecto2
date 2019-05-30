@@ -1,0 +1,11 @@
+Clase Principal{
+
+	Main(){
+	
+	Familia fam = new Familia();
+	fam.crear();
+
+
+		}
+
+}

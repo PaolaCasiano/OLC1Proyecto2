@@ -1,0 +1,16 @@
+Clase Persona{
+
+int edad;
+String nombre;
+String rol;
+
+crear void(int ed, string nom,string ro){
+
+edad = ed;
+nombre = nom;
+rol = ro;
+
+}
+
+
+}

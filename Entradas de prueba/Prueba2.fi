@@ -1,0 +1,37 @@
+clase Declaraciones{
+    publico int array var1 [2][5]={{1,2,3,4,5},{6,7,8,9,0}};>>//6
+    <-
+        objeto con 2 hijos
+            {1,2,3,2,3}
+            objeto con 5 hijos
+            y 
+            {1,1,2,1,4}
+            objeto con 5 hijos
+    ->
+
+    main(){
+    
+    print(var1[0][2]);
+    string total = pruebametodo(2);  
+    print("si, este es el total" + total);  
+    print("y esto si se imprime :'v");
+    }
+
+
+    publico pruebaMetodo string (int d){
+        int array arr10, arr20, arr30 [2] [1+1+1] = {
+            {5, 10, 15*23},
+            {20, 2, 30}
+        };
+
+        string algo = arr10[1+(-1)][1] + "jojo";
+        print(algo);
+        return algo;
+        
+        print("esto no se deberia imprimir");
+        >>print(clase.algo[posicion]);
+        >>return algo[5];
+
+    }
+
+}

@@ -1,0 +1,8 @@
+clase figuritas{
+    main(){
+        addFigure( circle("red", 10+20+3, flag, varX, varY));
+        addFigure( triangle("red", flag, varX, varY, varX+10, varY+10, varX+100, varY ));
+        addFigure( square("#008000", flag, varX, varY, 100, 20*2));
+        addFigure( line("#008000", varX, varY,varx+100, vary+100, grosor));
+    }
+}
